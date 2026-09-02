@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الأنظمة | دكة للتقنية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginGate" class="sys-login-wrap">
+  <div class="admin-modal">
+    <h3>دخول لوحة الأنظمة</h3>
+    <input id="loginPass" type="password" placeholder="كلمة المرور" style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);margin-bottom:12px;font-family:inherit;font-size:14px;outline:none;">
+    <button id="loginBtn" class="btn btn-primary" style="width:100%; justify-content:center;">دخول</button>
+    <div id="loginError" style="color:var(--danger); font-size:12.5px; margin-top:12px; display:none;">كلمة مرور غير صحيحة.</div>
+    <a href="index.html" style="display:block; text-align:center; margin-top:16px; font-size:13px; color:var(--text-dim);">← رجوع للموقع</a>
+  </div>
+</div>
+
+<div class="sys-shell" id="sysShell" style="display:none;">
+  <header class="sys-header">
+    <div class="wrap">
+      <a href="index.html" class="sys-back">← رجوع للموقع</a>
+      <div class="logo"><div class="logo-mark">دك</div>الأنظمة</div>
+      <button id="logoutBtn" class="sys-logout">تسجيل خروج</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="sys-tabbar" id="sysTabbar">
+      <button data-tab="pos" class="active">نقاط البيع</button>
+      <button data-tab="inventory">المخزون</button>
+      <button data-tab="attendance">الحضور والانصراف</button>
+      <button data-tab="crm">العملاء</button>
+      <button data-tab="security">الأمن والمراقبة</button>
+      <button data-tab="erp">تخطيط الموارد</button>
+    </div>
+
+    <!-- ===== نقاط البيع ===== -->
+    <section class="sys-page active" id="page-pos">
+      <div class="sys-page-head">
+        <div><h2>نقاط البيع</h2><p>أنشئ فاتورة بيع سريعة من المنتجات المتوفرة بالمخزون.</p></div>
+      </div>
+      <div class="sys-grid">
+        <div class="sys-panel">
+          <h3>إضافة صنف للفاتورة</h3>
+          <div class="sys-form">
+            <select id="posProductSelect"></select>
+            <div class="row2">
+              <input id="posQty" type="number" min="1" value="1" placeholder="الكمية">
+              <button class="sys-btn ghost" id="posAddBtn" type="button">إضافة للسلة</button>
+            </div>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <h3>الفاتورة الحالية</h3>
+          <div id="posCart"><div class="sys-empty-note">السلة فارغة</div></div>
+          <div class="sys-cart-total"><span>الإجمالي</span><b id="posTotal">0.00 ر.س</b></div>
+          <button class="sys-btn" id="posCheckoutBtn" style="margin-top:14px; width:100%;">إتمام البيع</button>
+        </div>
+      </div>
+      <div class="sys-panel" style="margin-top:20px;">
+        <h3>آخر الفواتير</h3>
+        <table class="sys-table">
+          <thead><tr><th>الأصناف</th><th>الإجمالي</th><th>التاريخ</th></tr></thead>
+          <tbody id="posInvoicesBody"></tbody>
+        </table>
+        <div class="sys-empty-note" id="posInvoicesEmpty" style="display:none;">لا توجد فواتير بعد.</div>
+      </div>
+    </section>
+
+    <!-- ===== المخزون ===== -->
+    <section class="sys-page" id="page-inventory">
+      <div class="sys-page-head">
+        <div><h2>إدارة المخزون</h2><p>أضف منتجات وتابع الكميات المتبقية.</p></div>
+      </div>
+      <div class="sys-grid">
+        <div class="sys-panel">
+          <h3>إضافة منتج</h3>
+          <div class="sys-form">
+            <input id="invName" type="text" placeholder="اسم المنتج">
+            <div class="row2">
+              <input id="invPrice" type="number" step="0.01" placeholder="السعر (ر.س)">
+              <input id="invStock" type="number" placeholder="الكمية">
+            </div>
+            <input id="invMin" type="number" placeholder="حد التنبيه (كمية منخفضة)">
+            <button class="sys-btn" id="invAddBtn" type="button">إضافة المنتج</button>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <h3>المنتجات الحالية</h3>
+          <table class="sys-table">
+            <thead><tr><th>المنتج</th><th>السعر</th><th>الكمية</th><th>الحالة</th><th></th></tr></thead>
+            <tbody id="invBody"></tbody>
+          </table>
+          <div class="sys-empty-note" id="invEmpty" style="display:none;">لا توجد منتجات بعد.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== الحضور والانصراف ===== -->
+    <section class="sys-page" id="page-attendance">
+      <div class="sys-page-head">
+        <div><h2>الحضور والانصراف</h2><p>سجّل الموظفين، وثبّت حضورهم وانصرافهم يومياً.</p></div>
+      </div>
+      <div class="sys-grid">
+        <div class="sys-panel">
+          <h3>إضافة موظف</h3>
+          <div class="sys-form">
+            <input id="empName" type="text" placeholder="اسم الموظف">
+            <button class="sys-btn" id="empAddBtn" type="button">إضافة</button>
+          </div>
+          <h3 style="margin-top:24px;">الموظفون</h3>
+          <table class="sys-table">
+            <thead><tr><th>الاسم</th><th></th></tr></thead>
+            <tbody id="empBody"></tbody>
+          </table>
+          <div class="sys-empty-note" id="empEmpty" style="display:none;">لا يوجد موظفون بعد.</div>
+        </div>
+        <div class="sys-panel">
+          <h3>سجل الحضور اليوم</h3>
+          <table class="sys-table">
+            <thead><tr><th>الموظف</th><th>النوع</th><th>الوقت</th></tr></thead>
+            <tbody id="attBody"></tbody>
+          </table>
+          <div class="sys-empty-note" id="attEmpty" style="display:none;">لا يوجد سجل حضور بعد.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== العملاء CRM ===== -->
+    <section class="sys-page" id="page-crm">
+      <div class="sys-page-head">
+        <div><h2>إدارة العملاء</h2><p>تابع عملاءك وملاحظاتك عليهم في مكان واحد.</p></div>
+      </div>
+      <div class="sys-grid">
+        <div class="sys-panel">
+          <h3>إضافة عميل</h3>
+          <div class="sys-form">
+            <input id="custName" type="text" placeholder="اسم العميل">
+            <input id="custPhone" type="tel" placeholder="رقم الجوال">
+            <textarea id="custNotes" placeholder="ملاحظات" style="min-height:70px; resize:vertical;"></textarea>
+            <button class="sys-btn" id="custAddBtn" type="button">إضافة العميل</button>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <h3>العملاء</h3>
+          <table class="sys-table">
+            <thead><tr><th>الاسم</th><th>الجوال</th><th>ملاحظات</th><th></th></tr></thead>
+            <tbody id="custBody"></tbody>
+          </table>
+          <div class="sys-empty-note" id="custEmpty" style="display:none;">لا يوجد عملاء بعد.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== الأمن والمراقبة ===== -->
+    <section class="sys-page" id="page-security">
+      <div class="sys-page-head">
+        <div><h2>الأمن والمراقبة</h2><p>سجل ملاحظات وأحداث أمنية (دخول غير معتاد، أعطال كاميرات، إلخ).</p></div>
+      </div>
+      <div class="sys-grid">
+        <div class="sys-panel">
+          <h3>تسجيل حدث</h3>
+          <div class="sys-form">
+            <textarea id="secNote" placeholder="وصف الحدث" style="min-height:70px; resize:vertical;"></textarea>
+            <select id="secSeverity">
+              <option value="info">عادي</option>
+              <option value="warning">تنبيه</option>
+              <option value="critical">حرج</option>
+            </select>
+            <button class="sys-btn" id="secAddBtn" type="button">تسجيل</button>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <h3>سجل الأحداث</h3>
+          <table class="sys-table">
+            <thead><tr><th>الوصف</th><th>الدرجة</th><th>التاريخ</th><th></th></tr></thead>
+            <tbody id="secBody"></tbody>
+          </table>
+          <div class="sys-empty-note" id="secEmpty" style="display:none;">لا توجد أحداث مسجّلة.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== تخطيط الموارد ERP ===== -->
+    <section class="sys-page" id="page-erp">
+      <div class="sys-page-head">
+        <div><h2>تخطيط الموارد</h2><p>سجّل الإيرادات والمصروفات وتابع الصافي.</p></div>
+      </div>
+      <div class="admin-summary" id="erpSummary" style="margin-bottom:24px;"></div>
+      <div class="sys-grid">
+        <div class="sys-panel">
+          <h3>إضافة حركة مالية</h3>
+          <div class="sys-form">
+            <select id="finType">
+              <option value="income">إيراد</option>
+              <option value="expense">مصروف</option>
+            </select>
+            <input id="finDesc" type="text" placeholder="الوصف">
+            <input id="finAmount" type="number" step="0.01" placeholder="المبلغ (ر.س)">
+            <button class="sys-btn" id="finAddBtn" type="button">إضافة</button>
+          </div>
+        </div>
+        <div class="sys-panel">
+          <h3>الحركات الأخيرة</h3>
+          <table class="sys-table">
+            <thead><tr><th>الوصف</th><th>النوع</th><th>المبلغ</th><th></th></tr></thead>
+            <tbody id="finBody"></tbody>
+          </table>
+          <div class="sys-empty-note" id="finEmpty" style="display:none;">لا توجد حركات بعد.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  let TOKEN = localStorage.getItem('dakka_admin_token') || null;
+
+  const loginGate = document.getElementById('loginGate');
+  const sysShell = document.getElementById('sysShell');
+  const loginPass = document.getElementById('loginPass');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function money(n){ return Number(n).toLocaleString('ar', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' ر.س'; }
+  function timeAgo(ts){
+    return new Date(ts).toLocaleString('ar', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  }
+
+  async function api(url, options={}){
+    const opts = Object.assign({}, options);
+    opts.headers = Object.assign({'Content-Type':'application/json'}, opts.headers, {'Authorization':'Bearer ' + TOKEN});
+    const res = await fetch(url, opts);
+    if(res.status === 401){
+      TOKEN = null;
+      localStorage.removeItem('dakka_admin_token');
+      showLogin();
+      throw new Error('unauthorized');
+    }
+    if(!res.ok){
+      const err = await res.json().catch(()=>({error:'خطأ غير معروف'}));
+      throw new Error(err.error || 'خطأ غير معروف');
+    }
+    return res.json();
+  }
+
+  function showLogin(){ loginGate.style.display = 'flex'; sysShell.style.display = 'none'; }
+  function showShell(){ loginGate.style.display = 'none'; sysShell.style.display = 'block'; loadAll(); }
+
+  loginBtn.addEventListener('click', async ()=>{
+    try{
+      const res = await fetch('/api/admin/login', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({password: loginPass.value})
+      });
+      if(!res.ok){ loginError.style.display = 'block'; return; }
+      const data = await res.json();
+      TOKEN = data.token;
+      localStorage.setItem('dakka_admin_token', TOKEN);
+      loginError.style.display = 'none';
+      showShell();
+    }catch(e){
+      loginError.textContent = 'تعذّر الاتصال بالسيرفر.';
+      loginError.style.display = 'block';
+    }
+  });
+  loginPass.addEventListener('keydown', e=>{ if(e.key==='Enter') loginBtn.click(); });
+
+  logoutBtn.addEventListener('click', async ()=>{
+    try{ await api('/api/admin/logout', {method:'POST'}); }catch(e){}
+    TOKEN = null;
+    localStorage.removeItem('dakka_admin_token');
+    showLogin();
+  });
+
+  // ===== تبويبات =====
+  document.getElementById('sysTabbar').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-tab]');
+    if(!btn) return;
+    document.querySelectorAll('#sysTabbar button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.sys-page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-' + btn.dataset.tab).classList.add('active');
+  });
+
+  function loadAll(){
+    loadProducts();
+    loadInvoices();
+    loadInventoryTable();
+    loadEmployees();
+    loadAttendance();
+    loadCustomers();
+    loadSecurity();
+    loadFinance();
+  }
+
+  // ===================== نقاط البيع =====================
+  let cart = [];
+  let productsCache = [];
+
+  async function loadProducts(){
+    try{
+      productsCache = await api('/api/products');
+      const select = document.getElementById('posProductSelect');
+      select.innerHTML = productsCache.map(p => `<option value="${p.id}">${escapeHtml(p.name)} — ${money(p.price)} (متوفر ${p.stock})</option>`).join('') || '<option value="">لا توجد منتجات، أضفها من تبويب المخزون</option>';
+    }catch(e){}
+  }
+
+  document.getElementById('posAddBtn').addEventListener('click', ()=>{
+    const select = document.getElementById('posProductSelect');
+    const qtyInput = document.getElementById('posQty');
+    const productId = select.value;
+    const qty = Math.max(1, Number(qtyInput.value) || 1);
+    const product = productsCache.find(p => p.id === productId);
+    if(!product) return;
+
+    const existing = cart.find(c => c.product_id === productId);
+    if(existing) existing.qty += qty;
+    else cart.push({ product_id: productId, name: product.name, price: product.price, qty });
+
+    renderCart();
+  });
+
+  function renderCart(){
+    const cartEl = document.getElementById('posCart');
+    if(cart.length === 0){
+      cartEl.innerHTML = '<div class="sys-empty-note">السلة فارغة</div>';
+    } else {
+      cartEl.innerHTML = cart.map((c, i) => `
+        <div class="sys-cart-item">
+          <span>${escapeHtml(c.name)} × ${c.qty}</span>
+          <span style="display:flex; align-items:center; gap:10px;">
+            ${money(c.price * c.qty)}
+            <button class="sys-mini-btn danger" data-i="${i}" onclick="this.closest('.sys-cart-item').remove(); window.__removeCartItem(${i})">✕</button>
+          </span>
+        </div>`).join('');
+    }
+    const total = cart.reduce((s,c)=> s + c.price * c.qty, 0);
+    document.getElementById('posTotal').textContent = money(total);
+  }
+  window.__removeCartItem = function(i){ cart.splice(i,1); renderCart(); };
+
+  document.getElementById('posCheckoutBtn').addEventListener('click', async ()=>{
+    if(cart.length === 0) return;
+    try{
+      await api('/api/invoices', {
+        method:'POST',
+        body: JSON.stringify({ items: cart.map(c => ({product_id:c.product_id, qty:c.qty})) })
+      });
+      cart = [];
+      renderCart();
+      await loadProducts();
+      await loadInvoices();
+      await loadInventoryTable();
+    }catch(e){
+      alert(e.message);
+    }
+  });
+
+  async function loadInvoices(){
+    try{
+      const invoices = await api('/api/invoices');
+      const body = document.getElementById('posInvoicesBody');
+      const empty = document.getElementById('posInvoicesEmpty');
+      if(invoices.length === 0){ body.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      body.innerHTML = invoices.slice(0,15).map(inv => `
+        <tr>
+          <td>${inv.items.map(it=>escapeHtml(it.product_name)+' ×'+it.qty).join('، ')}</td>
+          <td class="num">${money(inv.total)}</td>
+          <td>${timeAgo(inv.created_at)}</td>
+        </tr>`).join('');
+    }catch(e){}
+  }
+
+  // ===================== المخزون =====================
+  document.getElementById('invAddBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('invName').value.trim();
+    const price = document.getElementById('invPrice').value;
+    const stock = document.getElementById('invStock').value;
+    const min = document.getElementById('invMin').value;
+    if(!name || price === '') return;
+    try{
+      await api('/api/products', {
+        method:'POST',
+        body: JSON.stringify({ name, price, stock, low_stock_at: min || 5 })
+      });
+      document.getElementById('invName').value = '';
+      document.getElementById('invPrice').value = '';
+      document.getElementById('invStock').value = '';
+      document.getElementById('invMin').value = '';
+      await loadProducts();
+      await loadInventoryTable();
+    }catch(e){ alert(e.message); }
+  });
+
+  async function loadInventoryTable(){
+    try{
+      const products = await api('/api/products');
+      const body = document.getElementById('invBody');
+      const empty = document.getElementById('invEmpty');
+      if(products.length === 0){ body.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      body.innerHTML = products.map(p => {
+        let badge = '<span class="sys-badge badge-ok">متوفر</span>';
+        if(p.stock <= 0) badge = '<span class="sys-badge badge-danger">نفد</span>';
+        else if(p.stock <= p.low_stock_at) badge = '<span class="sys-badge badge-warn">منخفض</span>';
+        return `
+        <tr>
+          <td>${escapeHtml(p.name)}</td>
+          <td class="num">${money(p.price)}</td>
+          <td class="num">${p.stock}</td>
+          <td>${badge}</td>
+          <td class="sys-row-actions">
+            <button class="sys-mini-btn" data-action="inv-plus" data-id="${p.id}">+1</button>
+            <button class="sys-mini-btn" data-action="inv-minus" data-id="${p.id}">-1</button>
+            <button class="sys-mini-btn danger" data-action="inv-delete" data-id="${p.id}">حذف</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }catch(e){}
+  }
+
+  document.getElementById('invBody').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const product = productsCache.find(p=>p.id===id) || {};
+    try{
+      if(btn.dataset.action === 'inv-plus'){
+        await api('/api/products/'+id, {method:'PATCH', body: JSON.stringify({stock: (product.stock||0)+1})});
+      }
+      if(btn.dataset.action === 'inv-minus'){
+        await api('/api/products/'+id, {method:'PATCH', body: JSON.stringify({stock: Math.max(0,(product.stock||0)-1)})});
+      }
+      if(btn.dataset.action === 'inv-delete'){
+        if(!confirm('حذف هذا المنتج؟')) return;
+        await api('/api/products/'+id, {method:'DELETE'});
+      }
+      await loadProducts();
+      await loadInventoryTable();
+    }catch(e){ alert(e.message); }
+  });
+
+  // ===================== الحضور والانصراف =====================
+  let employeesCache = [];
+
+  document.getElementById('empAddBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('empName').value.trim();
+    if(!name) return;
+    try{
+      await api('/api/employees', {method:'POST', body: JSON.stringify({name})});
+      document.getElementById('empName').value = '';
+      await loadEmployees();
+    }catch(e){ alert(e.message); }
+  });
+
+  async function loadEmployees(){
+    try{
+      employeesCache = await api('/api/employees');
+      const body = document.getElementById('empBody');
+      const empty = document.getElementById('empEmpty');
+      if(employeesCache.length === 0){ body.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      body.innerHTML = employeesCache.map(emp => `
+        <tr>
+          <td>${escapeHtml(emp.name)}</td>
+          <td class="sys-row-actions">
+            <button class="sys-mini-btn" data-action="checkin" data-id="${emp.id}">حضور</button>
+            <button class="sys-mini-btn" data-action="checkout" data-id="${emp.id}">انصراف</button>
+            <button class="sys-mini-btn danger" data-action="emp-delete" data-id="${emp.id}">حذف</button>
+          </td>
+        </tr>`).join('');
+    }catch(e){}
+  }
+
+  document.getElementById('empBody').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    try{
+      if(btn.dataset.action === 'checkin') await api('/api/attendance', {method:'POST', body: JSON.stringify({employee_id:id, type:'in'})});
+      if(btn.dataset.action === 'checkout') await api('/api/attendance', {method:'POST', body: JSON.stringify({employee_id:id, type:'out'})});
+      if(btn.dataset.action === 'emp-delete'){
+        if(!confirm('حذف هذا الموظف؟')) return;
+        await api('/api/employees/'+id, {method:'DELETE'});
+        await loadEmployees();
+      }
+      await loadAttendance();
+    }catch(e){ alert(e.message); }
+  });
+
+  async function loadAttendance(){
+    try{
+      const logs = await api('/api/attendance');
+      const body = document.getElementById('attBody');
+      const empty = document.getElementById('attEmpty');
+      if(logs.length === 0){ body.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      body.innerHTML = logs.slice(0,20).map(l => `
+        <tr>
+          <td>${escapeHtml(l.employee_name)}</td>
+          <td>${l.type === 'in' ? '<span class="sys-badge badge-ok">حضور</span>' : '<span class="sys-badge badge-neutral">انصراف</span>'}</td>
+          <td>${timeAgo(l.ts)}</td>
+        </tr>`).join('');
+    }catch(e){}
+  }
+
+  // ===================== العملاء CRM =====================
+  document.getElementById('custAddBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const notes = document.getElementById('custNotes').value.trim();
+    if(!name) return;
+    try{
+      await api('/api/customers', {method:'POST', body: JSON.stringify({name, phone, notes})});
+      document.getElementById('custName').value = '';
+      document.getElementById('custPhone').value = '';
+      document.getElementById('custNotes').value = '';
+      await loadCustomers();
+    }catch(e){ alert(e.message); }
+  });
+
+  async function loadCustomers(){
+    try{
+      const customers = await api('/api/customers');
+      const body = document.getElementById('custBody');
+      const empty = document.getElementById('custEmpty');
+      if(customers.length === 0){ body.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      body.innerHTML = customers.map(c => `
+        <tr>
+          <td>${escapeHtml(c.name)}</td>
+          <td>${escapeHtml(c.phone||'-')}</td>
+          <td>${escapeHtml(c.notes||'-')}</td>
+          <td class="sys-row-actions">
+            <button class="sys-mini-btn danger" data-action="cust-delete" data-id="${c.id}">حذف</button>
+          </td>
+        </tr>`).join('');
+    }catch(e){}
+  }
+
+  document.getElementById('custBody').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action="cust-delete"]');
+    if(!btn) return;
+    if(!confirm('حذف هذا العميل؟')) return;
+    try{
+      await api('/api/customers/'+btn.dataset.id, {method:'DELETE'});
+      await loadCustomers();
+    }catch(e){ alert(e.message); }
+  });
+
+  // ===================== الأمن والمراقبة =====================
+  document.getElementById('secAddBtn').addEventListener('click', async ()=>{
+    const note = document.getElementById('secNote').value.trim();
+    const severity = document.getElementById('secSeverity').value;
+    if(!note) return;
+    try{
+      await api('/api/security-logs', {method:'POST', body: JSON.stringify({note, severity})});
+      document.getElementById('secNote').value = '';
+      await loadSecurity();
+    }catch(e){ alert(e.message); }
+  });
+
+  async function loadSecurity(){
+    try{
+      const logs = await api('/api/security-logs');
+      const body = document.getElementById('secBody');
+      const empty = document.getElementById('secEmpty');
+      if(logs.length === 0){ body.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      const sevBadge = { info:'badge-neutral', warning:'badge-warn', critical:'badge-danger' };
+      const sevLabel = { info:'عادي', warning:'تنبيه', critical:'حرج' };
+      body.innerHTML = logs.map(l => `
+        <tr>
+          <td>${escapeHtml(l.note)}</td>
+          <td><span class="sys-badge ${sevBadge[l.severity]||'badge-neutral'}">${sevLabel[l.severity]||l.severity}</span></td>
+          <td>${timeAgo(l.created_at)}</td>
+          <td class="sys-row-actions"><button class="sys-mini-btn danger" data-action="sec-delete" data-id="${l.id}">حذف</button></td>
+        </tr>`).join('');
+    }catch(e){}
+  }
+
+  document.getElementById('secBody').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action="sec-delete"]');
+    if(!btn) return;
+    try{
+      await api('/api/security-logs/'+btn.dataset.id, {method:'DELETE'});
+      await loadSecurity();
+    }catch(e){ alert(e.message); }
+  });
+
+  // ===================== تخطيط الموارد ERP =====================
+  document.getElementById('finAddBtn').addEventListener('click', async ()=>{
+    const type = document.getElementById('finType').value;
+    const description = document.getElementById('finDesc').value.trim();
+    const amount = document.getElementById('finAmount').value;
+    if(!description || amount === '') return;
+    try{
+      await api('/api/finance', {method:'POST', body: JSON.stringify({type, description, amount})});
+      document.getElementById('finDesc').value = '';
+      document.getElementById('finAmount').value = '';
+      await loadFinance();
+    }catch(e){ alert(e.message); }
+  });
+
+  async function loadFinance(){
+    try{
+      const data = await api('/api/finance');
+      const summary = document.getElementById('erpSummary');
+      summary.innerHTML = `
+        <div class="admin-pill"><b>${money(data.summary.income)}</b>إجمالي الإيرادات</div>
+        <div class="admin-pill"><b>${money(data.summary.expense)}</b>إجمالي المصروفات</div>
+        <div class="admin-pill"><b>${money(data.summary.net)}</b>الصافي</div>
+      `;
+      const body = document.getElementById('finBody');
+      const empty = document.getElementById('finEmpty');
+      if(data.entries.length === 0){ body.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      body.innerHTML = data.entries.map(f => `
+        <tr>
+          <td>${escapeHtml(f.description)}</td>
+          <td>${f.type === 'income' ? '<span class="sys-badge badge-ok">إيراد</span>' : '<span class="sys-badge badge-danger">مصروف</span>'}</td>
+          <td class="num">${money(f.amount)}</td>
+          <td class="sys-row-actions"><button class="sys-mini-btn danger" data-action="fin-delete" data-id="${f.id}">حذف</button></td>
+        </tr>`).join('');
+    }catch(e){}
+  }
+
+  document.getElementById('finBody').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action="fin-delete"]');
+    if(!btn) return;
+    try{
+      await api('/api/finance/'+btn.dataset.id, {method:'DELETE'});
+      await loadFinance();
+    }catch(e){ alert(e.message); }
+  });
+
+  // ===== بدء التشغيل =====
+  if(TOKEN) showShell(); else showLogin();
+})();
+</script>
+
+</body>
+</html>
